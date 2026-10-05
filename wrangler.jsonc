@@ -10,7 +10,7 @@
   // AUTH_USER) go in .dev.vars locally and `wrangler secret put` in prod.
   "vars": {
     // Date-stamped Gemini build label — Google rotates it; refresh if requests start failing.
-    "GEMINI_BL": "boq_gemini-web-uiserver_20261002.02_p0",
+    "GEMINI_BL": "boq_assistant-bard-web-server_20261002.02_p0",
     "DEFAULT_MODEL": "gemini-3.5-flash",
     "REQUEST_TIMEOUT_SEC": "180"
   }
