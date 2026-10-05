@@ -1,0 +1,61 @@
+name: Deploy Cloudflare Worker
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Type check
+        run: npm run typecheck
+
+      - name: Write Worker secrets
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          API_KEYS: ${{ secrets.API_KEYS }}
+          COOKIE: ${{ secrets.COOKIE }}
+          XSRF_TOKEN: ${{ secrets.XSRF_TOKEN }}
+          AUTH_USER: ${{ secrets.AUTH_USER }}
+        run: |
+          if [ -n "$API_KEYS" ]; then
+            printf '%s' "$API_KEYS" | npx wrangler secret put API_KEYS
+          fi
+
+          if [ -n "$COOKIE" ]; then
+            printf '%s' "$COOKIE" | npx wrangler secret put COOKIE
+          fi
+
+          if [ -n "$XSRF_TOKEN" ]; then
+            printf '%s' "$XSRF_TOKEN" | npx wrangler secret put XSRF_TOKEN
+          fi
+
+          if [ -n "$AUTH_USER" ]; then
+            printf '%s' "$AUTH_USER" | npx wrangler secret put AUTH_USER
+          fi
+
+      - name: Deploy Worker
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: npx wrangler deploy
